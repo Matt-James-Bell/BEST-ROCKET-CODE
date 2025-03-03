@@ -207,6 +207,13 @@ function crash() {
   crashed = true;
   clearInterval(gameInterval);
   
+  // If the player had joined (pressed Blast off) and didn't cash out before crashing,
+  // then reset the entire accumulated discount to 0.
+  if (playerJoined) {
+    accumulatedDiscount = 0;
+    updateAccumulatedDiscount();
+  }
+  
   const rocketSound = document.getElementById("rocket-sound");
   rocketSound.pause();
   rocketSound.currentTime = 0;
@@ -251,12 +258,10 @@ function updateAccumulatedDiscount() {
 }
 
 function startCountdown() {
-  // Start playing background music as soon as countdown begins
-  document.getElementById("bg-music").play();
-  
+  // Background music is already playing from page load, so we continue playing it here.
   playerJoined = false;
   const countdownDiv = document.getElementById("countdown");
-  let duration = 5; // Changed countdown duration to 5 seconds
+  let duration = 5; // Countdown duration is 5 seconds
   countdownDiv.style.display = "block";
   countdownDiv.textContent = duration;
   document.getElementById("ignite").disabled = false;
@@ -268,7 +273,7 @@ function startCountdown() {
     } else {
       clearInterval(countdownInterval);
       countdownDiv.style.display = "none";
-      // If the player did not press Blast off before countdown finishes, disable cash out
+      // If the player did not press Blast off before countdown finishes, disable cash out and start the run.
       if (!playerJoined) {
         document.getElementById("cashout").disabled = true;
         startRun();
@@ -283,7 +288,12 @@ function startRun() {
   startGame();
 }
 
-window.addEventListener("load", startCountdown);
+window.addEventListener("load", () => {
+  // Play background music as soon as the page loads so it loops continuously.
+  const bgMusic = document.getElementById("bg-music");
+  bgMusic.play();
+  startCountdown();
+});
 
 document.getElementById("ignite").addEventListener("click", () => {
   clearInterval(countdownInterval);
